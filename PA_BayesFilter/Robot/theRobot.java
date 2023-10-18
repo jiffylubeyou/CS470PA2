@@ -407,11 +407,15 @@ public class theRobot extends JFrame {
     // Note: sonars is a bit string with four characters, specifying the sonar reading in the direction of North, South, East, and West
     //       For example, the sonar string 1001, specifies that the sonars found a wall in the North and West directions, but not in the South and East directions
     void updateProbabilities(int action, String sonars) {
-        // your code
+        // your code asdf
+        // moveProb and sensorAccuracy
         boolean northBlock;
         boolean southBlock;
         boolean eastBlock;
         boolean westBlock;
+        int otherMoveProb = (1 - moveProb) / 4;
+        
+
         if (sonars.charAt(0) == 1)
         {
             northBlock = true;
@@ -444,15 +448,125 @@ public class theRobot extends JFrame {
         {
             westBlock = false;
         }
-        //mundo.grid 1 is black and 0 is white
+        //mundo.grid 1 is black and 0 is white asdf
         // (y - 1) = north, (y + 1) = south, (x + 1) = east, (x - 1) = west
         
         //1 and height - 1 are for not checking the outer ring
+        double[][] newprobs = new double[mundo.width][mundo.height];
         for (int y = 1; y < mundo.height - 1; y++)
         {
             for (int x = 1; x < mundo.width - 1; x++)
             {
-                probs[x][y] = 1;
+                // fill up the action probabilities, likelhood we moved around
+                double[] action_prob = new double[5];
+                for (int i = 0; i < 5; i++)
+                {
+                    action_prob[i] = otherMoveProb;
+                }
+                action_prob[action] = moveProb;
+
+                if (mundo.grid[x][y - 1] == 1)
+                {
+                    action_prob[4] = action_prob[4] + action_prob[0];
+                }
+                if (mundo.grid[x][y + 1] == 1)
+                {
+                    action_prob[4] = action_prob[4] + action_prob[1];
+                }
+                if (mundo.grid[x + 1][y] == 1)
+                {
+                    action_prob[4] = action_prob[4] + action_prob[2];
+                }
+                if (mundo.grid[x - 1][y] == 1)
+                {
+                    action_prob[4] = action_prob[4] + action_prob[3];
+                }
+                // Now the transtition probabilities are ready
+
+                newprobs[x][y] = (prob[x][y - 1] * action_prob[0]) + (prob[x][y + 1] * action_prob[1]) +
+                (prob[x + 1][y] * action_prob[2]) + (prob[x - 1][y] * action_prob[3]) + (prob[x][y] * action_prob[4]);
+
+                if (mundo.grid[x][y] == 1)
+                {
+                    newprobs[x][y] = 0;
+                }
+            }
+        }
+
+        //This is the sensor step
+        for (int y = 1; y < mundo.height - 1; y++)
+        {
+            for (int x = 1; x < mundo.width - 1; x++)
+            {
+                if (mundo.grid[x][y - 1] == 1)
+                {
+                    if (northBlock)
+                    {
+                        newprobs[x][y] = newprobs[x][y] * sensorAccuracy;
+                    }
+                    else
+                    {
+                        newprobs[x][y] = newprobs[x][y] * (1 - sensorAccuracy);
+                    }
+                }
+                if (mundo.grid[x][y + 1] == 1)
+                {
+                    if (southBlock)
+                    {
+                        newprobs[x][y] = newprobs[x][y] * sensorAccuracy;
+                    }
+                    else
+                    {
+                        newprobs[x][y] = newprobs[x][y] * (1 - sensorAccuracy);
+                    }
+                }
+                if (mundo.grid[x + 1][y] == 1)
+                {
+                    if (eastBlock)
+                    {
+                        newprobs[x][y] = newprobs[x][y] * sensorAccuracy;
+                    }
+                    else
+                    {
+                        newprobs[x][y] = newprobs[x][y] * (1 - sensorAccuracy);
+                    }
+                }
+                if (mundo.grid[x - 1][y] == 1)
+                {
+                    if (westBlock)
+                    {
+                        newprobs[x][y] = newprobs[x][y] * sensorAccuracy;
+                    }
+                    else
+                    {
+                        newprobs[x][y] = newprobs[x][y] * (1 - sensorAccuracy);
+                    }
+                }
+            }
+        }
+
+        // Normalize everything
+        int total = 0;
+        for (int y = 1; y < mundo.height - 1; y++)
+        {
+            for (int x = 1; x < mundo.width - 1; x++)
+            {
+                total = total + newprobs[x][y];
+            }
+        }
+        for (int y = 1; y < mundo.height - 1; y++)
+        {
+            for (int x = 1; x < mundo.width - 1; x++)
+            {
+                newprobs[x][y] = newprobs[x][y] / total;
+            }
+        }
+        // Now just copy over the probs
+        for (int y = 1; y < mundo.height - 1; y++)
+        {
+            for (int x = 1; x < mundo.width - 1; x++)
+            {
+                probs[x][y] = newprobs[x][y];
             }
         }
 
