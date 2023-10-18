@@ -444,9 +444,16 @@ public class theRobot extends JFrame {
         {
             westBlock = false;
         }
-        if (action == 1)
+        //mundo.grid 1 is black and 0 is white
+        // (y - 1) = north, (y + 1) = south, (x + 1) = east, (x - 1) = west
+        
+        //1 and height - 1 are for not checking the outer ring
+        for (int y = 1; y < mundo.height - 1; y++)
         {
-            probs[5][5] = 1;
+            for (int x = 1; x < mundo.width - 1; x++)
+            {
+                probs[x][y] = 1;
+            }
         }
 
         myMaps.updateProbs(probs); // call this function after updating your probabilities so that the
