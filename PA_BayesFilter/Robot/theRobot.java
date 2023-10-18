@@ -408,6 +408,46 @@ public class theRobot extends JFrame {
     //       For example, the sonar string 1001, specifies that the sonars found a wall in the North and West directions, but not in the South and East directions
     void updateProbabilities(int action, String sonars) {
         // your code
+        boolean northBlock;
+        boolean southBlock;
+        boolean eastBlock;
+        boolean westBlock;
+        if (sonars.charAt(0) == 1)
+        {
+            northBlock = true;
+        }
+        else
+        {
+            northBlock = false;
+        }
+        if (sonars.charAt(1) == 1)
+        {
+            southBlock = true;
+        }
+        else
+        {
+            southBlock = false;
+        } 
+        if (sonars.charAt(2) == 1)
+        {
+            eastBlock = true;
+        }
+        else
+        {
+            eastBlock = false;
+        }
+        if (sonars.charAt(3) == 1)
+        {
+            westBlock = true;
+        }
+        else
+        {
+            westBlock = false;
+        }
+        if (action == 1)
+        {
+            probs[5][5] = 1;
+        }
 
         myMaps.updateProbs(probs); // call this function after updating your probabilities so that the
                                    //  new probabilities will show up in the probability map on the GUI
